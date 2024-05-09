@@ -236,6 +236,8 @@ class _AddInventoryScreenState
                     header: const Text("Inventory Table",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
                     onRowDelete: (index, row) {
+                      String documentId = documents[index].id; // Get the document ID using index
+                      _deleteInventoryItem(documentId);
                       return true;
                     },
 
@@ -291,7 +293,7 @@ class _AddInventoryScreenState
 
                           DynamicTableDataCell(value: data['serialNumber']),
                           DynamicTableDataCell(value: data['name']), // Display user email
-                          DynamicTableDataCell(value: data['imageUrl']),
+                          DynamicTableDataCell(value: data['imageUrl'],showEditIcon: false),
                         ],
                         onSelectChanged: (value) {
 
@@ -306,8 +308,10 @@ class _AddInventoryScreenState
                           label: const Text("Name"),
                           dynamicTableInputType: DynamicTableInputType.text()),
                       DynamicTableDataColumn(
+                        isEditable: false,
                           label: const Text("Image"),
-                          dynamicTableInputType: DynamicTableImageInput()),
+                          dynamicTableInputType: DynamicTableImageInput()
+                      ),
                     ],
                   ),
                 ),
@@ -335,31 +339,50 @@ class _AddInventoryScreenState
       _imageData = null;
     });
   }
-  // Method to upload image to Firestore and add inventory data to Firestore
   Future<void> _uploadImageAndAddInventoryToFirestore() async {
     try {
       setState(() {
         _isSubmitting = true; // Show progress bar
       });
-      // Upload image data to Firestore
-      String imageDataString = base64Encode(_imageData!);
 
-      // Add inventory item to Firestore
-      await FirebaseFirestore.instance
+      // Check if serial number already exists
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('inventory')
           .doc(getHospitalName())
           .collection('items')
-          .add({
-        'serialNumber': _serialNumberController.text,
-        'name': _nameController.text,
-        'imageUrl': imageDataString,
-      });
+          .where('serialNumber', isEqualTo: _serialNumberController.text)
+          .get();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Inventory added successfully'),
-        ),
-      );
+      if (querySnapshot.docs.isNotEmpty) {
+        // Serial number already exists
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Inventory with this serial number already exists'),
+          ),
+        );
+      } else {
+        // Serial number doesn't exist, proceed with adding inventory item
+
+        // Upload image data to Firestore
+        String imageDataString = base64Encode(_imageData!);
+
+        // Add inventory item to Firestore
+        await FirebaseFirestore.instance
+            .collection('inventory')
+            .doc(getHospitalName())
+            .collection('items')
+            .add({
+          'serialNumber': _serialNumberController.text,
+          'name': _nameController.text,
+          'imageUrl': imageDataString,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Inventory added successfully'),
+          ),
+        );
+      }
     } catch (e) {
       print('Error uploading image and adding inventory to Firestore: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -367,13 +390,38 @@ class _AddInventoryScreenState
           content: Text('Failed to add inventory'),
         ),
       );
-    }
-    finally {
+    } finally {
       setState(() {
         _isSubmitting = false; // Hide progress bar
       });
     }
   }
+
+// Method to delete inventory item from Firestore
+  Future<void> _deleteInventoryItem(String documentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('inventory')
+          .doc(getHospitalName())
+          .collection('items')
+          .doc(documentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Inventory item deleted successfully'),
+        ),
+      );
+    } catch (e) {
+      print('Error deleting inventory item: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete inventory item'),
+        ),
+      );
+    }
+  }
+
 
 
 

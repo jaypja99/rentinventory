@@ -69,14 +69,14 @@ class AddHospitalScreenBloc extends BasePageBloc {
   void deleteUser(DocumentSnapshot document) async {
     try {
       final userData = document.data() as Map<String, dynamic>;
-      final loginAccessEmail = userData['loginAccessEmail'];
+      final serialNumber = userData['serialNumber'];
 
       // Delete user document from Firestore
       await document.reference.delete();
 
       // Delete user from Firebase Authentication
       final user = await FirebaseAuth.instance.currentUser;
-      if (user != null && user.email == loginAccessEmail) {
+      if (user != null && user.email == serialNumber) {
         await user.delete();
       }
 
