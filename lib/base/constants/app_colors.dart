@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 const Color accentColor = secondaryColor;
 const Color buttonColor = Color(0xFF762E72);
 const Color primaryColor = Colors.blueAccent;
-const Color secondaryColor = Color(0xFF35A100);
+const Color secondaryColor = Colors.blueAccent;
 const Color white = Colors.white;
 const Color black = Colors.black;
 const Color blackOlive = Color(0xFF393A35);

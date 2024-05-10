@@ -1,36 +1,34 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as add_user_screen;
 import 'package:flutter/material.dart';
-import 'package:rentinventory/Screens/AddHospitalScreen/add_hospital_screen_bloc.dart';
 import 'package:rentinventory/base/src_constants.dart';
 import 'package:rentinventory/base/src_widgets.dart';
 
 import '../../base/basePage.dart';
 import '../../base/bloc/base_bloc.dart';
 import '../../base/constants/app_widgets.dart';
-import '../../base/widgets/custom_page_route.dart';
-import '../../widgets/common_widgets.dart';
 import '../../widgets/dynamic_table_library/dynamic_input_type/dynamic_table_input_type.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_cell.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_column.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_row.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_widget.dart';
+import 'add_user_screen_bloc.dart';
 
-class AddHospitalScreen extends BasePage<AddHospitalScreenBloc> {
-  AddHospitalScreen({Key? key}) : super(key: key);
+class AddUserScreen extends BasePage<AddUserScreenBloc> {
+  AddUserScreen({Key? key}) : super(key: key);
 
   @override
   BasePageState<BasePage<BasePageBloc?>, BasePageBloc> getState() {
-    return _AddHospitalScreenState();
+    return _AddUserScreenState();
   }
 
   static Route<dynamic> route(bool isSwitch, String mobileNumber) {
-    return CustomPageRoute(builder: (context) => AddHospitalScreen());
+    return CustomPageRoute(builder: (context) => AddUserScreen());
   }
 }
 
-class _AddHospitalScreenState
-    extends BasePageState<AddHospitalScreen, AddHospitalScreenBloc> {
-  AddHospitalScreenBloc bloc = AddHospitalScreenBloc();
+class _AddUserScreenState
+    extends BasePageState<AddUserScreen, AddUserScreenBloc> {
+  AddUserScreenBloc bloc = AddUserScreenBloc();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -41,7 +39,7 @@ class _AddHospitalScreenState
   TextEditingController _hospitalNameController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
 
-  List<DocumentSnapshot> selectedDocuments = [];
+  List<add_user_screen.DocumentSnapshot> selectedDocuments = [];
 
 
   bool _passwordVisible = false;
@@ -282,9 +280,9 @@ class _AddHospitalScreenState
   }
 
   Widget buildTable() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: bloc.hospitalStream,
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+    return StreamBuilder<add_user_screen.QuerySnapshot>(
+      stream: bloc.userStream,
+      builder: (BuildContext context, AsyncSnapshot<add_user_screen.QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }

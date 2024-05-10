@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EditUserPopupForm extends StatefulWidget {
   final DocumentSnapshot userDocument;
@@ -25,7 +26,7 @@ class _EditUserPopupFormState extends State<EditUserPopupForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit User'),
+      title: Text('Edit User',style: GoogleFonts.raleway(),),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,11 +34,11 @@ class _EditUserPopupFormState extends State<EditUserPopupForm> {
           children: <Widget>[
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: 'Name',labelStyle: GoogleFonts.raleway()),
             ),
             TextFormField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'loginAccessEmail'),
+              decoration: InputDecoration(labelText: 'loginAccessEmail',labelStyle: GoogleFonts.raleway()),
             ),
           ],
         ),
@@ -47,14 +48,14 @@ class _EditUserPopupFormState extends State<EditUserPopupForm> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: Text('Cancel',style: GoogleFonts.raleway()),
         ),
         ElevatedButton(
           onPressed: () {
             _updateUserInAuthAndFirestore();
             Navigator.of(context).pop();
           },
-          child: Text('Save'),
+          child: Text('Save',style: GoogleFonts.raleway()),
         ),
       ],
     );

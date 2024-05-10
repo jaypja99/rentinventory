@@ -9,12 +9,7 @@ import 'package:flutter/material.dart';
 import '../base/constants/app_colors.dart';
 import '../base/constants/app_styles.dart';
 import '../base/constants/app_widgets.dart';
-import '../base/src_utils.dart';
-import '../base/widgets/appbar_view.dart';
-import '../base/widgets/image_view.dart';
-import '../utils/common_utils.dart';
-import '../utils/shared_pref_utils.dart';
-import 'dialog_widget.dart';
+
 
 Widget buildCommonCard(Widget child,{ EdgeInsets margin = const EdgeInsets.all(0)}){
   return Card(

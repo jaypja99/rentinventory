@@ -8,21 +8,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:rentinventory/Screens/InventoryFormScreen/add_inventory_screen_bloc.dart';
 import 'package:rentinventory/Utils/shared_pref_utils.dart';
 import 'package:rentinventory/base/src_widgets.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../../base/constants/app_widgets.dart';
+import '../../base/basePage.dart';
+import '../../base/bloc/base_bloc.dart';
 import '../../widgets/dynamic_table_library/dynamic_input_type/dynamic_table_image_input.dart';
 import '../../widgets/dynamic_table_library/dynamic_input_type/dynamic_table_input_type.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_cell.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_column.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_row.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_widget.dart';
-
-
-import '../../base/basePage.dart';
-import '../../base/bloc/base_bloc.dart';
-import '../../widgets/dynamic_table_library/dynamic_table_widget.dart';
-
 
 class AddInventoryScreen extends BasePage<AddInventoryScreenBloc> {
   const AddInventoryScreen({super.key});
@@ -37,7 +31,6 @@ class AddInventoryScreen extends BasePage<AddInventoryScreenBloc> {
   }
 }
 
-
 class _AddInventoryScreenState
     extends BasePageState<AddInventoryScreen, AddInventoryScreenBloc> {
   AddInventoryScreenBloc bloc = AddInventoryScreenBloc();
@@ -50,23 +43,43 @@ class _AddInventoryScreenState
   var tableKey = GlobalKey<DynamicTableState>();
   final TextEditingController _searchController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
     bloc.getInventoryData(); // Call the method to get user data when the widget initializes
-
   }
-
 
   @override
   getBloc() {
     return bloc;
   }
 
-
   @override
   Widget buildWidget(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: bloc.inventoryStream,
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(
+                child:
+                    CircularProgressIndicator()), // Show loading indicator while data is loading
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+                child: Text(
+                    'Error: ${snapshot.error}')), // Show error message if there's an error
+          );
+        }
+        final documents = snapshot.data!.docs;
+        return _buildScreenContent(documents);
+      },
+    );
+  }
+
+  Widget _buildScreenContent(List<DocumentSnapshot> documents) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -74,20 +87,19 @@ class _AddInventoryScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Form(
-                key: _formKey,
-                child: Container(
-                  color: Colors.white,
-                  child: _buildFormWidget(),
-                )
+              key: _formKey,
+              child: Container(
+                color: Colors.white,
+                child: _buildFormWidget(),
+              ),
             ),
             SizedBox(height: 20),
-            _buildDataTable()
+            _buildDataTable(documents),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildFormWidget() {
     return Table(
@@ -161,11 +173,11 @@ class _AddInventoryScreenState
   Widget getDisplayImage() {
     return _imageData != null
         ? Center(
-      child: Image.memory(
-        _imageData!,
-        fit: BoxFit.cover,
-      ),
-    )
+            child: Image.memory(
+              _imageData!,
+              fit: BoxFit.cover,
+            ),
+          )
         : SizedBox(); // Return an empty SizedBox if no image selected
   }
 
@@ -183,144 +195,122 @@ class _AddInventoryScreenState
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           child: _imageData != null
               ? Stack(
-            children: [
-              getDisplayImage(),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _removeImage(); // Function to remove selected image
-                  },
-                ),
-              ),
-            ],
-          )
+                  children: [
+                    getDisplayImage(),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _removeImage(); // Function to remove selected image
+                        },
+                      ),
+                    ),
+                  ],
+                )
               : Container(
-            color: Colors.black12,
-            child: const Center(
-              child: Text(
-                "Click here to add inventory image",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.black12,
+                  child: const Center(
+                    child: Text(
+                      "Click here to add inventory image",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
         ),
       ),
     );
   }
 
-
-  Widget _buildDataTable() {
-    return StreamBuilder<QuerySnapshot>(
-        stream: bloc.inventoryStream,
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          }
-          final documents = snapshot.data!.docs;
-          return Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: DynamicTable(
-                    key: tableKey,
-                    header: const Text("Inventory Table",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),),
-                    onRowDelete: (index, row) {
-                      String documentId = documents[index].id; // Get the document ID using index
-                      _deleteInventoryItem(documentId);
-                      return true;
-                    },
-
-                    showActions: true,
-                    showAddRowButton: false,
-                    showDeleteAction: true,
-                    rowsPerPage: 10,
-                    showFirstLastButtons: true,
-                    availableRowsPerPage: const [
-                      10,
-                      20,
-                      30,
-                      40,
-                    ],
-                    dataRowMinHeight: 60,
-                    dataRowMaxHeight: 60,
-                    columnSpacing: 60,
-                    actionColumnTitle: "My Action Title",
-                    showCheckboxColumn: true,
-                    onSelectAll: (value) {
-
-                    },
-                    onRowsPerPageChanged: (value) {
-
-                    },
-                    actions: [
-                      Container(
-                        width: 300,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.all(8),
-                              floatingLabelBehavior: FloatingLabelBehavior.never,
-                              labelText: 'Search',
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                    rows: documents.map((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      return DynamicTableDataRow(
-                        index: documents.indexOf(doc),
-                        cells: [
-
-                          DynamicTableDataCell(value: data['serialNumber']),
-                          DynamicTableDataCell(value: data['name']), // Display user email
-                          DynamicTableDataCell(value: data['imageUrl'],showEditIcon: false),
-                        ],
-                        onSelectChanged: (value) {
-
-                        },
-                      );
-                    }).toList(),
-                    columns: [
-                      DynamicTableDataColumn(
-                          label: const Text("Scan Code"),
-                          dynamicTableInputType: DynamicTableInputType.text()),
-                      DynamicTableDataColumn(
-                          label: const Text("Name"),
-                          dynamicTableInputType: DynamicTableInputType.text()),
-                      DynamicTableDataColumn(
-                        isEditable: false,
-                          label: const Text("Image"),
-                          dynamicTableInputType: DynamicTableImageInput()
-                      ),
-                    ],
+  Widget _buildDataTable(List<DocumentSnapshot<Object?>> documents) {
+    return Column(children: [
+      SizedBox(
+        width: double.infinity,
+        child: DynamicTable(
+          key: tableKey,
+          header: const Text(
+            "Inventory Table",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          onRowDelete: (index, row) {
+            String documentId =
+                documents[index].id; // Get the document ID using index
+            _deleteInventoryItem(documentId);
+            return true;
+          },
+          showActions: true,
+          showAddRowButton: false,
+          showDeleteAction: true,
+          rowsPerPage: 10,
+          showFirstLastButtons: true,
+          availableRowsPerPage: const [
+            10,
+            20,
+            30,
+            40,
+          ],
+          dataRowMinHeight: 60,
+          dataRowMaxHeight: 60,
+          columnSpacing: 60,
+          actionColumnTitle: "My Action Title",
+          showCheckboxColumn: true,
+          onSelectAll: (value) {},
+          onRowsPerPageChanged: (value) {},
+          actions: [
+            Container(
+              width: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(8),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    labelText: 'Search',
+                    border: OutlineInputBorder(),
                   ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
                 ),
-              ]
-          );
-        }
-    );
+              ),
+            ),
+          ],
+          rows: documents.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return DynamicTableDataRow(
+              index: documents.indexOf(doc),
+              cells: [
+                DynamicTableDataCell(value: data['serialNumber']),
+                DynamicTableDataCell(value: data['name']),
+                // Display user email
+                DynamicTableDataCell(
+                    value: data['imageUrl'], showEditIcon: false),
+              ],
+              onSelectChanged: (value) {},
+            );
+          }).toList(),
+          columns: [
+            DynamicTableDataColumn(
+                label: const Text("Scan Code"),
+                dynamicTableInputType: DynamicTableInputType.text()),
+            DynamicTableDataColumn(
+                label: const Text("Name"),
+                dynamicTableInputType: DynamicTableInputType.text()),
+            DynamicTableDataColumn(
+                isEditable: false,
+                label: const Text("Image"),
+                dynamicTableInputType: DynamicTableImageInput()),
+          ],
+        ),
+      ),
+    ]);
   }
-
 
   void _pickImage() async {
     final picker = ImagePicker();
@@ -339,6 +329,7 @@ class _AddInventoryScreenState
       _imageData = null;
     });
   }
+
   Future<void> _uploadImageAndAddInventoryToFirestore() async {
     try {
       setState(() {
@@ -421,19 +412,5 @@ class _AddInventoryScreenState
       );
     }
   }
-
-
-
-
 }
 
-
-
-class InventoryItem {
-  final String serialNumber;
-  final String name;
-  final String imageUrl;
-
-  InventoryItem(
-      {required this.serialNumber, required this.name, required this.imageUrl});
-}

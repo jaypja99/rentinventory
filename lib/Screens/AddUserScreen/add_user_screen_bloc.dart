@@ -7,12 +7,12 @@ import '../../Utils/date_util.dart';
 import '../../base/bloc/base_bloc.dart';
 import '../../base/constants/app_widgets.dart';
 
-class AddHospitalScreenBloc extends BasePageBloc {
-  AddHospitalScreenBloc();
+class AddUserScreenBloc extends BasePageBloc {
+  AddUserScreenBloc();
 
-  final _hospitalStreamController = StreamController<QuerySnapshot>();
+  final _userStreamController = StreamController<QuerySnapshot>();
 
-  Stream<QuerySnapshot> get hospitalStream => _hospitalStreamController.stream;
+  Stream<QuerySnapshot> get userStream => _userStreamController.stream;
 
   void addUserData(
       String name,
@@ -62,7 +62,7 @@ class AddHospitalScreenBloc extends BasePageBloc {
 
   void getHospitalData() {
     FirebaseFirestore.instance.collection('users').snapshots().listen((snapshot) {
-      _hospitalStreamController.add(snapshot);
+      _userStreamController.add(snapshot);
     });
   }
 
@@ -112,6 +112,6 @@ class AddHospitalScreenBloc extends BasePageBloc {
 
   @override
   void dispose() {
-    _hospitalStreamController.close();
+    _userStreamController.close();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../src_constants.dart';
 
@@ -25,10 +26,10 @@ class ButtonView extends StatelessWidget {
       {Key? key, this.color = primaryColor,
       this.textColor,
       this.disableColor,
-      this.height = 40,
+      this.height = 50,
       this.width = double.infinity,
       this.minWidth = double.infinity,
-      this.radius = 6,
+      this.radius = 5,
       this.textStyle,
       this.disable = false,
       this.borderColor,
@@ -63,11 +64,8 @@ class ButtonView extends StatelessWidget {
                       alignment: alignment,
                       child: Text(text,
                           maxLines: 1,
-                          style: textStyle ?? TextStyle(
-                                  color: textColor ?? white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontFamily: fontFamilySourceSansPro))),
+                          style: textStyle ?? GoogleFonts.raleway(color: textColor ?? white,  fontWeight: FontWeight.w700,
+                            fontSize: 14))),
                   postfix == null
                       ? const SizedBox()
                       : Container(margin: const EdgeInsets.only(left: 12), child: postfix)

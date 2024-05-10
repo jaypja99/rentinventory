@@ -12,9 +12,7 @@ import '../../base/widgets/button_view.dart';
 import '../../base/widgets/custom_page_route.dart';
 import 'login_screen_bloc.dart';
 
-
 class LoginScreen extends BasePage<LoginScreenBloc> {
-
   const LoginScreen({super.key});
 
   @override
@@ -23,22 +21,20 @@ class LoginScreen extends BasePage<LoginScreenBloc> {
   }
 
   static Route<dynamic> route() {
-    return CustomPageRoute(
-        builder: (context) => LoginScreen());
+    return CustomPageRoute(builder: (context) => LoginScreen());
   }
 }
 
 class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
   LoginScreenBloc bloc = LoginScreenBloc();
 
-  final TextEditingController _usernameController  = TextEditingController();
-  final TextEditingController _passwordController  = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   String? uid;
   String? userEmail;
-
 
   @override
   LoginScreenBloc getBloc() {
@@ -46,66 +42,79 @@ class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
   }
 
   @override
-  void onReady() {
-
-  }
+  void onReady() {}
 
   @override
   Widget buildWidget(BuildContext context) {
     return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20,vertical: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width-(MediaQuery.of(context).size.width/2),
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(50),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max, // Set mainAxisSize to min
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Login',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 20),
-                          TextFormField(
-                            controller: _usernameController,
-                            decoration: InputDecoration(
-                              labelText: 'Username',
-                              border: OutlineInputBorder(),
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/back_login.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width -
+                        (MediaQuery.of(context).size.width /2)*1.2,
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(50),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          // Set mainAxisSize to min
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Welcome to Rent Demo App',
+                              style: TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          SizedBox(height: 20),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              border: OutlineInputBorder(),
+                            SizedBox(height: 50),
+                            TextFormField(
+                              controller: _usernameController,
+                              decoration: InputDecoration(
+                                labelText: 'Username',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 20),
-                          // submitButton("Register",(){
-                          //   registerWithEmailPassword(_usernameController.text, _passwordController.text);
-                          // }),
-                          submitButton("Login",(){
-                            signInWithEmailPassword(_usernameController.text, _passwordController.text);
-                          }),
-                        ],
+                            SizedBox(height: 20),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            // submitButton("Register",(){
+                            //   registerWithEmailPassword(_usernameController.text, _passwordController.text);
+                            // }),
+                            SizedBox(
+                              width: double.infinity,
+                              child: submitButton("Login", () {
+                                signInWithEmailPassword(_usernameController.text,
+                                    _passwordController.text);
+                              }),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-            ],
+                SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -116,14 +125,14 @@ class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
     return ButtonView(title, onClick);
   }
 
-
   Future<User?> registerWithEmailPassword(String email, String password) async {
     // Initialize Firebase
     await Firebase.initializeApp();
     User? user;
 
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -173,7 +182,8 @@ class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
         setLogin(true);
         showMessageBar('Login Successfully');
         showMessageBar(user.getIdToken().toString());
-        Navigator.pushAndRemoveUntil(globalContext, DashboardScreen.route(), (route) => false);
+        Navigator.pushAndRemoveUntil(
+            globalContext, DashboardScreen.route(), (route) => false);
       }
     } on FirebaseAuthException catch (e) {
       setLogin(false);
@@ -191,7 +201,10 @@ class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
 
   Future<Map<String, dynamic>?> getUserData(String email) async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('users').where('loginAccessEmail', isEqualTo: email).get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('loginAccessEmail', isEqualTo: email)
+          .get();
       if (snapshot.docs.isNotEmpty) {
         return snapshot.docs.first.data();
       } else {
@@ -212,11 +225,6 @@ class _LoginScreenState extends BasePageState<LoginScreen, LoginScreenBloc> {
     setHospitalName(userData['hospitalName']);
     print(getUserRole());
     getUserRole() == 'admin' ? setAdmin(true) : setAdmin(false);
-        // Add more data as needed
+    // Add more data as needed
   }
-
-
-
-
-
 }

@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rentinventory/Screens/login/login_screen.dart';
 import 'package:rentinventory/Utils/shared_pref_utils.dart';
 
@@ -18,7 +19,7 @@ class ProfileWidget extends StatelessWidget {
         SizedBox(width: 10),
         Text(
           "Hello, ${getUserName()}",
-          style: TextStyle(
+          style: GoogleFonts.raleway(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black,

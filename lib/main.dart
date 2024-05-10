@@ -1,14 +1,10 @@
-
 import 'package:ez_localization/ez_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:rentinventory/Screens/AddHospitalScreen/add_hospital_screen.dart';
-import 'package:rentinventory/Screens/InventoryFormScreen/add_inventory_screen_bloc.dart';
-import 'package:rentinventory/Screens/login/login_screen.dart';
 import 'package:rentinventory/Screens/Dashbaord/dashboard_screen.dart';
+import 'package:rentinventory/Screens/login/login_screen.dart';
 import 'package:rentinventory/Utils/shared_pref_utils.dart';
 import 'package:rentinventory/base/bloc/base_bloc_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -22,10 +18,8 @@ import 'base/constants/app_widgets.dart';
 
 var uuid = const Uuid();
 
-
-
 Future<void> setFirebaseInit() async {
-  if(kIsWeb) {
+  if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
           apiKey: "AIzaSyApVEaw2dKXG27iQrFLshn1Z04KFwYsV_g",
@@ -36,8 +30,7 @@ Future<void> setFirebaseInit() async {
           appId: "1:942758742741:web:92391b3b6d2d168399b05c",
           measurementId: "G-747378DG8D"),
     );
-  }
-  else{
+  } else {
     await Firebase.initializeApp();
   }
 }
@@ -46,18 +39,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GestureBinding.instance.resamplingEnabled = true;
 
-
-
   ///Shared Preferences
   await SpUtil.getInstance();
-
 
   await setFirebaseInit();
 
   ///Set Portrait
-  runApp(
-      BlocProvider<AppBloc>(initBloc: AppBloc(), child: const MyHomePage())
-  );
+  runApp(BlocProvider<AppBloc>(initBloc: AppBloc(), child: const MyHomePage()));
 }
 
 class MyHomePage extends StatefulWidget {
@@ -78,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             EzLocalizationDelegate ezLocalizationDelegate) {
           return ScreenUtilInit(
             builder: () => MaterialApp(
-
               builder: (context, child) {
                 return MediaQuery(
                     data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -87,13 +74,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               debugShowCheckedModeBanner: false,
               title: 'Rental ',
               theme: lightTheme(context),
-              home:  isLogin() ? DashboardScreen() : LoginScreen(),
+              home: isLogin() ? DashboardScreen() : LoginScreen(),
               navigatorKey: navigatorKey,
               localizationsDelegates:
-              ezLocalizationDelegate.localizationDelegates,
+                  ezLocalizationDelegate.localizationDelegates,
               supportedLocales: ezLocalizationDelegate.supportedLocales,
               localeResolutionCallback:
-              ezLocalizationDelegate.localeResolutionCallback,
+                  ezLocalizationDelegate.localeResolutionCallback,
             ),
           );
         },
