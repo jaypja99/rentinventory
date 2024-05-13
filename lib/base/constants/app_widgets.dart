@@ -12,21 +12,17 @@ final BuildContext globalContext = navigatorKey.currentState!.context;
 /// base image asset
 imageAsset(context, path, {width, height, color, fit = BoxFit.contain}) =>
     Image.asset("assets/images/$path",
-        width: width,
-        height: height,
-        color: color,
-        fit: fit);
+        width: width, height: height, color: color, fit: fit);
 
 /// base image asset
-assetImage(context, path) =>
-    AssetImage('assets/images/$path');
+assetImage(context, path) => AssetImage('assets/images/$path');
 
 /// hide keyboard
 hideKeyboard(BuildContext context) =>
     FocusScope.of(context).requestFocus(FocusNode());
 
 /// show const back arrow
-backArrow(context, {onTap, arrowColor = black, path = 'left_arrow'}){
+backArrow(context, {onTap, arrowColor = black, path = 'left_arrow'}) {
   return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -34,23 +30,30 @@ backArrow(context, {onTap, arrowColor = black, path = 'left_arrow'}){
           padding: const EdgeInsets.all(10.0),
           child: Center(
               child: imageAsset(context, path,
-                  height: 20.0,
-                  width: 20.0,
-                  color: arrowColor ?? black))));
+                  height: 20.0, width: 20.0, color: arrowColor ?? black))));
 }
 
-showMessageBar(String message,{int sec=3}) {
+showMessageBar(String message) {
   Flushbar(
     flushbarPosition: FlushbarPosition.BOTTOM,
     flushbarStyle: FlushbarStyle.GROUNDED,
     isDismissible: true,
-    duration:  Duration(seconds: sec),
+    duration: const Duration(seconds: 3),
     messageText: Text(
       message,
-      maxLines: 4,
-      style: styleMedium1.copyWith(
-          color: white
-      ),
+      maxLines: 3,
+      style: styleMedium1.copyWith(color: white),
     ),
   ).show(globalContext);
+}
+
+Future selectDate(context,Function(DateTime) selectedDate) async {
+  DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030));
+  if (picked != null) {
+    selectedDate(picked);
+  }
 }

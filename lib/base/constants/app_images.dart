@@ -48,6 +48,7 @@ class AppImages {
   static const String icMailAt =  'assets/icons/ic_envelope_at.svg';
   static const String icCalendar =  'assets/icons/ic_calendar.svg';
   static const String icClock =  'assets/icons/ic_clock.svg';
+  static const String icClose = 'assets/images/ic_close.svg';
 
 
 }
