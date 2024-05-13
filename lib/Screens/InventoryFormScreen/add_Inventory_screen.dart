@@ -1,13 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_listener/flutter_barcode_listener.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:rentinventory/Screens/InventoryFormScreen/add_inventory_screen_bloc.dart';
 import 'package:rentinventory/Utils/shared_pref_utils.dart';
 import 'package:rentinventory/base/src_widgets.dart';
+import 'package:rentinventory/base/widgets/button_view.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../base/basePage.dart';
 import '../../base/bloc/base_bloc.dart';
@@ -36,12 +43,16 @@ class _AddInventoryScreenState
   AddInventoryScreenBloc bloc = AddInventoryScreenBloc();
 
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _serialNumberController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _serialNumberController = TextEditingController();
   Uint8List? _imageData;
   late bool _isSubmitting;
   var tableKey = GlobalKey<DynamicTableState>();
   final TextEditingController _searchController = TextEditingController();
+  FocusNode _focusNode = FocusNode();
+  String scannedCode = '';
+  String scannedCode2 = '';
+
 
   @override
   void initState() {
@@ -55,12 +66,18 @@ class _AddInventoryScreenState
   }
 
   @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget buildWidget(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: bloc.inventoryStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
                 child:
                     CircularProgressIndicator()), // Show loading indicator while data is loading
@@ -86,14 +103,14 @@ class _AddInventoryScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Form(
+           /* Form(
               key: _formKey,
               child: Container(
                 color: Colors.white,
                 child: _buildFormWidget(),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20),*/
             _buildDataTable(documents),
           ],
         ),
@@ -102,22 +119,15 @@ class _AddInventoryScreenState
   }
 
   Widget _buildFormWidget() {
-    return Table(
+    return Column(
       children: [
-        TableRow(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _buildForm(),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.fill,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: _buildPickImageBox(),
-              ),
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildForm(),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildPickImageBox(),
         ),
       ],
     );
@@ -128,11 +138,11 @@ class _AddInventoryScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         TextFormField(
           autofocus: true,
           controller: _serialNumberController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Serial Number',
             border: OutlineInputBorder(),
           ),
@@ -143,10 +153,10 @@ class _AddInventoryScreenState
             return null;
           },
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         TextFormField(
           controller: _nameController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Name',
             border: OutlineInputBorder(),
           ),
@@ -157,15 +167,7 @@ class _AddInventoryScreenState
             return null;
           },
         ),
-        SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ButtonView("Submit", () async {
-            if (_formKey.currentState!.validate()) {
-              await _uploadImageAndAddInventoryToFirestore();
-            }
-          }),
-        )
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -210,6 +212,7 @@ class _AddInventoryScreenState
                   ],
                 )
               : Container(
+                  height: 100,
                   color: Colors.black12,
                   child: const Center(
                     child: Text(
@@ -228,6 +231,7 @@ class _AddInventoryScreenState
   }
 
   Widget _buildDataTable(List<DocumentSnapshot<Object?>> documents) {
+
     return Column(children: [
       SizedBox(
         width: double.infinity,
@@ -235,7 +239,7 @@ class _AddInventoryScreenState
           key: tableKey,
           header: const Text(
             "Inventory Table",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           onRowDelete: (index, row) {
             String documentId =
@@ -262,6 +266,11 @@ class _AddInventoryScreenState
           onSelectAll: (value) {},
           onRowsPerPageChanged: (value) {},
           actions: [
+            ButtonView("Add Inventory", () async {
+              _showAddInventoryDialog(
+
+              );
+            },postfix: Icon(Icons.add,color: Colors.white,),),
             Container(
               width: 300,
               child: Padding(
@@ -311,6 +320,64 @@ class _AddInventoryScreenState
       ),
     ]);
   }
+
+  void _showAddInventoryDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          content: Container(
+            width: MediaQuery.of(context).size.width * 0.5,
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  children: [
+                    // Keyboard listener to capture key events
+                    KeyboardListener(
+                      autofocus: true,
+                      onKeyEvent: (event) {
+                        if (event is KeyboardListener) {
+                          // Append the key label to scannedCode
+                          scannedCode += event.logicalKey.keyLabel;
+                          print(event.physicalKey);
+                          print(event.logicalKey.keyLabel);
+                          // Update the state to reflect the scanned code
+                          setState(() {
+                            scannedCode = scannedCode;
+                          });
+                        }
+                      },
+                      child: Text('Scanned Code2: $scannedCode'),
+                      focusNode: _focusNode,
+                    ),
+                    BarcodeKeyboardListener(
+                      child: SizedBox.shrink(), // Placeholder widget
+                      onBarcodeScanned: (barcode) {
+                        setState(() {
+                          print('Scanned Code: $scannedCode2');
+                          print('Scanned Code: $scannedCode2');
+                          scannedCode2 = barcode; // Set scanned barcode to the serial number field
+                        });
+                      },
+                    ),
+                    Text('Scanned Code: $scannedCode'),
+                    Text('Scanned Code: $scannedCode2'),
+
+
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+          ],
+        );
+      },
+    );
+  }
+
+
 
   void _pickImage() async {
     final picker = ImagePicker();
