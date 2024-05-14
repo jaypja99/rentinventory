@@ -1,24 +1,19 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:rentinventory/Screens/InventoryFormScreen/add_inventory_screen_bloc.dart';
+import 'package:rentinventory/Screens/InventoryFormScreen/form/inventory_form_screen.dart';
 import 'package:rentinventory/Utils/shared_pref_utils.dart';
 import 'package:rentinventory/base/src_widgets.dart';
 
 import '../../base/basePage.dart';
 import '../../base/bloc/base_bloc.dart';
-import '../../widgets/common_alert_dialog.dart';
 import '../../widgets/dynamic_table_library/dynamic_input_type/dynamic_table_image_input.dart';
 import '../../widgets/dynamic_table_library/dynamic_input_type/dynamic_table_input_type.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_cell.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_column.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_data_row.dart';
 import '../../widgets/dynamic_table_library/dynamic_table_widget.dart';
-import 'form/form_screen.dart';
 
 class AddInventoryScreen extends BasePage<AddInventoryScreenBloc> {
   const AddInventoryScreen({super.key});
@@ -33,21 +28,13 @@ class AddInventoryScreen extends BasePage<AddInventoryScreenBloc> {
   }
 }
 
-class _AddInventoryScreenState extends BasePageState<AddInventoryScreen, AddInventoryScreenBloc> {
+class _AddInventoryScreenState
+    extends BasePageState<AddInventoryScreen, AddInventoryScreenBloc> {
   AddInventoryScreenBloc bloc = AddInventoryScreenBloc();
 
-  final _formKey = GlobalKey<FormState>();
   var tableKey = GlobalKey<DynamicTableState>();
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _serialNumberController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-
-  Uint8List? _imageData;
-  late bool _isSubmitting;
-  String scannedCode = '';
-  String scannedCode2 = '';
 
   @override
   void initState() {
@@ -62,7 +49,6 @@ class _AddInventoryScreenState extends BasePageState<AddInventoryScreen, AddInve
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -100,121 +86,6 @@ class _AddInventoryScreenState extends BasePageState<AddInventoryScreen, AddInve
           children: <Widget>[
             _buildDataTable(documents),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFormWidget(String scannedCode) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: _buildForm(scannedCode),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: _buildPickImageBox(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForm(String code) {
-    _serialNumberController.text = code;
-    print(code);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const SizedBox(height: 8),
-        TextFormField(
-          enabled: false,
-          autofocus: true,
-          controller: _serialNumberController,
-          decoration: const InputDecoration(
-            labelText: 'Serial Number',
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter the serial number';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter the name';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-
-  Widget getDisplayImage() {
-    return _imageData != null
-        ? Center(
-            child: Image.memory(
-              _imageData!,
-              fit: BoxFit.cover,
-            ),
-          )
-        : SizedBox(); // Return an empty SizedBox if no image selected
-  }
-
-  Widget _buildPickImageBox() {
-    return GestureDetector(
-      onTap: () {
-        _pickImage(); // Function to handle image picking
-      },
-      child: DottedBorder(
-        color: Colors.black,
-        borderType: BorderType.RRect,
-        radius: Radius.circular(12),
-        padding: const EdgeInsets.all(6),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          child: _imageData != null
-              ? Stack(
-                  children: [
-                    getDisplayImage(),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () {
-                          _removeImage(); // Function to remove selected image
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              : Container(
-                  height: 100,
-                  color: Colors.black12,
-                  child: const Center(
-                    child: Text(
-                      "Click here to add inventory image",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
         ),
       ),
     );
@@ -319,89 +190,13 @@ class _AddInventoryScreenState extends BasePageState<AddInventoryScreen, AddInve
     final result = await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return FormScreen();
+          return InventoryFromScreen();
         });
     if (result != null) {
-      // getBloc().loadMessages();
+      bloc.getInventoryData();
     }
   }
 
-
-  void _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
-      setState(() {
-        _imageData = Uint8List.fromList(bytes);
-      });
-    }
-  }
-
-  void _removeImage() {
-    setState(() {
-      _imageData = null;
-    });
-  }
-
-  Future<void> _uploadImageAndAddInventoryToFirestore() async {
-    try {
-      setState(() {
-        _isSubmitting = true; // Show progress bar
-      });
-
-      // Check if serial number already exists
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('inventory')
-          .doc(getHospitalName())
-          .collection('items')
-          .where('serialNumber', isEqualTo: _serialNumberController.text)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        // Serial number already exists
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Inventory with this serial number already exists'),
-          ),
-        );
-      } else {
-        // Serial number doesn't exist, proceed with adding inventory item
-
-        // Upload image data to Firestore
-        String imageDataString = base64Encode(_imageData!);
-
-        // Add inventory item to Firestore
-        await FirebaseFirestore.instance
-            .collection('inventory')
-            .doc(getHospitalName())
-            .collection('items')
-            .add({
-          'serialNumber': _serialNumberController.text,
-          'name': _nameController.text,
-          'imageUrl': imageDataString,
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Inventory added successfully'),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error uploading image and adding inventory to Firestore: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to add inventory'),
-        ),
-      );
-    } finally {
-      setState(() {
-        _isSubmitting = false; // Hide progress bar
-      });
-    }
-  }
   Future<void> _deleteInventoryItem(String documentId) async {
     try {
       await FirebaseFirestore.instance

@@ -10,8 +10,10 @@ class ProgressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircularProgressIndicator(
-      color: color ?? (primaryColor),
+    return Center(
+      child: CircularProgressIndicator(
+        color: color ?? (primaryColor),
+      ),
     );
   }
 }

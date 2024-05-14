@@ -11,38 +11,38 @@ import '../../base/widgets/button_view.dart';
 import '../../base/widgets/image_view.dart';
 import 'common_form_screen_bloc.dart';
 
-class CommonFilterScreen extends BasePageDialog<CommonFilterScreenBloc> {
-  final String filterTitleText;
-  final String filterButtonText;
+class CommonFormScreen extends BasePageDialog<CommonFormScreenBloc> {
+  final String formTitleText;
+  final String formButtonText;
   final Widget contentWidget;
   final Function onCloseTapped;
   final Function onButtonTapped;
 
-  const CommonFilterScreen(
+  const CommonFormScreen(
       {Key? key,
-      required this.filterTitleText,
-      required this.filterButtonText,
+      required this.formTitleText,
+      required this.formButtonText,
       required this.contentWidget,
       required this.onCloseTapped,
       required this.onButtonTapped})
       : super(key: key);
 
   @override
-  BasePageDialogState<CommonFilterScreen, CommonFilterScreenBloc> getDialogState() {
+  BasePageDialogState<CommonFormScreen, CommonFormScreenBloc> getDialogState() {
     return _FilterScreenState();
   }
 
 }
 
 class _FilterScreenState
-    extends BasePageDialogState<CommonFilterScreen, CommonFilterScreenBloc> {
+    extends BasePageDialogState<CommonFormScreen, CommonFormScreenBloc> {
 
-  final CommonFilterScreenBloc _bloc = CommonFilterScreenBloc();
+  final CommonFormScreenBloc _bloc = CommonFormScreenBloc();
   bool switchValue = false;
 
   Widget buildTopView() {
     return Container(
-      width: double.infinity,
+      width: MediaQuery.of(context).size.width*0.65,
       padding: EdgeInsets.all(5.w),
       decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
@@ -52,7 +52,7 @@ class _FilterScreenState
         color: Colors.blueAccent
       ),
       child: Text(
-        widget.filterTitleText,
+        widget.formTitleText,
         style: styleSmall4.copyWith(color: white, fontWeight: FontWeight.w500),
       ),
     );
@@ -60,9 +60,9 @@ class _FilterScreenState
 
   Widget buildBottomView() {
     return Container(
-      width: double.infinity,
+      width:MediaQuery.of(context).size.width*0.65,
       padding: EdgeInsetsDirectional.fromSTEB(15.w, 0, 15.w, 15.w),
-      child: ButtonView( widget.filterButtonText, () async {
+      child: ButtonView( widget.formButtonText, () async {
         widget.onButtonTapped();
 
       }),
@@ -77,7 +77,7 @@ class _FilterScreenState
   void onReady() {}
 
   @override
-  CommonFilterScreenBloc getBloc() {
+  CommonFormScreenBloc getBloc() {
     return _bloc;
   }
 
