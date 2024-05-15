@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import 'dynamic_input_type/dynamic_table_input_type.dart';
 import 'dynamic_table_action.dart';
 import 'dynamic_table_data_cell.dart';
@@ -19,12 +18,14 @@ class DynamicTableSource extends DataTableSource {
       int index, List<dynamic> oldValue, List<dynamic> newValue)? onRowSave;
   int _selectedCount = 0;
   Map<int, List<int>> dependentOn = {};
+
   //{1:[3,4]} 3 and 4th column are dependent on 1st column
 
   Map<int, List<dynamic>> _editingValues = {};
   Map<int, Map<int, DynamicTableInputType>> _editingCellsInput = {};
 
   List<int> _unsavedRows = [];
+
   DynamicTableSource({
     this.showActions = false,
     this.showDeleteAction = true,
@@ -48,6 +49,7 @@ class DynamicTableSource extends DataTableSource {
       }
     }
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -255,8 +257,6 @@ class DynamicTableSource extends DataTableSource {
       cells: _buildRowCells(data[index].cells, index),
     );
     return datarow;
-
-
   }
 
   List<DataCell> _addActionsInCell(
@@ -267,13 +267,21 @@ class DynamicTableSource extends DataTableSource {
     if (showActions) {
       actions.add(
         DynamicTableActionEdit(
-          icon: Container(
-            decoration: BoxDecoration(
-              color: Colors.blueAccent,
-              borderRadius: BorderRadius.circular(8.0), // Adjust the radius as needed
+          icon: Padding(
+            padding: const EdgeInsets.all(3),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius:
+                    BorderRadius.circular(8.0), // Adjust the radius as needed
+              ),
+              padding: const EdgeInsets.all(8.0), // Adjust padding as needed
+              child: const Icon(
+                Icons.edit,
+                color: Colors.white,
+                size: 16,
+              ), // Load PNG icon from asset
             ),
-            padding: const EdgeInsets.all(8.0), // Adjust padding as needed
-            child:const Icon(Icons.edit,color: Colors.white,size: 16,), // Load PNG icon from asset
           ),
           showOnlyOnEditing: false,
           onPressed: () {
@@ -292,9 +300,24 @@ class DynamicTableSource extends DataTableSource {
           },
         ),
       );
-
       actions.add(
         DynamicTableActionSave(
+          icon: Padding(
+            padding: const EdgeInsets.all(3),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius:
+                    BorderRadius.circular(8.0), // Adjust the radius as needed
+              ),
+              padding: const EdgeInsets.all(8.0), // Adjust padding as needed
+              child: const Icon(
+                Icons.save,
+                color: Colors.white,
+                size: 16,
+              ), // Load PNG icon from asset
+            ),
+          ),
           showOnlyOnEditing: true,
           onPressed: () {
             List newValue = [];
@@ -327,7 +350,24 @@ class DynamicTableSource extends DataTableSource {
           },
         ),
       );
-      actions.add(DynamicTableActionCancel(
+      actions.add(
+          DynamicTableActionCancel(
+        icon: Padding(
+          padding: const EdgeInsets.all(3),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius:
+                  BorderRadius.circular(8.0), // Adjust the radius as needed
+            ),
+            padding: const EdgeInsets.all(8.0), // Adjust padding as needed
+            child: const Icon(
+              Icons.cancel,
+              color: Colors.white,
+              size: 16,
+            ), // Load PNG icon from asset
+          ),
+        ),
         showOnlyOnEditing: true,
         onPressed: () {
           data[row].isEditing = !data[row].isEditing;
@@ -338,19 +378,25 @@ class DynamicTableSource extends DataTableSource {
           _disposeInputAt(row);
           notifyListeners();
         },
-      ));
+      )
+      );
     }
     if (showDeleteAction) {
       actions.add(DynamicTableActionDelete(
         icon: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(3),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.red,
-              borderRadius: BorderRadius.circular(8.0), // Adjust the radius as needed
+              borderRadius:
+                  BorderRadius.circular(8.0), // Adjust the radius as needed
             ),
             padding: const EdgeInsets.all(8.0), // Adjust padding as needed
-            child:const Icon(Icons.delete,color: Colors.white,size: 16,), // Load PNG icon from asset
+            child: const Icon(
+              Icons.delete,
+              color: Colors.white,
+              size: 16,
+            ), // Load PNG icon from asset
           ),
         ),
         showOnlyOnEditing: false,
@@ -455,7 +501,6 @@ class DynamicTableSource extends DataTableSource {
 
     bool disableCell = columns[columnIndex].isDisable;
 
-
     return DataCell(
       dynamicTableInputType.getChild(
         showEditingWidget ? (_editingValues[index]?[columnIndex]) : cell.value,
@@ -479,11 +524,17 @@ class DynamicTableSource extends DataTableSource {
       ),
       placeholder: cell.placeholder,
       showEditIcon: cell.showEditIcon,
-      onTap: disableCell ? null : cell.onTap, // Disable cell if isDisable is true
-      onLongPress: disableCell ? null : cell.onLongPress, // Disable cell if isDisable is true
-      onTapDown: disableCell ? null : cell.onTapDown, // Disable cell if isDisable is true
-      onDoubleTap: disableCell ? null : cell.onDoubleTap, // Disable cell if isDisable is true
-      onTapCancel: disableCell ? null : cell.onTapCancel, // Disable cell if isDisable is true
+      onTap: disableCell ? null : cell.onTap,
+      // Disable cell if isDisable is true
+      onLongPress: disableCell ? null : cell.onLongPress,
+      // Disable cell if isDisable is true
+      onTapDown: disableCell ? null : cell.onTapDown,
+      // Disable cell if isDisable is true
+      onDoubleTap: disableCell ? null : cell.onDoubleTap,
+      // Disable cell if isDisable is true
+      onTapCancel: disableCell
+          ? null
+          : cell.onTapCancel, // Disable cell if isDisable is true
     );
   }
 }

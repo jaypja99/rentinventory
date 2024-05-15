@@ -9,7 +9,7 @@ import '../../../Utils/shared_pref_utils.dart';
 import '../../../base/bloc/base_bloc.dart';
 import '../../../base/constants/app_widgets.dart';
 
-class InventroyFormScreenBloc extends BasePageBloc {
+class RentFormScreenBloc extends BasePageBloc {
 
   Future<void> AddInventory(
       TextEditingController serialNumberController,

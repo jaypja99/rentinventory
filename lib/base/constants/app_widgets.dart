@@ -33,18 +33,17 @@ backArrow(context, {onTap, arrowColor = black, path = 'left_arrow'}) {
                   height: 20.0, width: 20.0, color: arrowColor ?? black))));
 }
 
-showMessageBar(String message) {
-  Flushbar(
-    flushbarPosition: FlushbarPosition.BOTTOM,
-    flushbarStyle: FlushbarStyle.GROUNDED,
-    isDismissible: true,
+ showMessageBar(String message, [Color? color]) {
+   ScaffoldMessenger.of(globalContext).showSnackBar( SnackBar(
+    backgroundColor: color ?? Colors.black,
+
     duration: const Duration(seconds: 3),
-    messageText: Text(
+    content: Text(
       message,
       maxLines: 3,
-      style: styleMedium1.copyWith(color: white),
+      style: TextStyle(color: Colors.white), // Adjust the style here
     ),
-  ).show(globalContext);
+  ));
 }
 
 Future selectDate(context,Function(DateTime) selectedDate) async {

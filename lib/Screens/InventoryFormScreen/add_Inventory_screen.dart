@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:rentinventory/Screens/InventoryFormScreen/add_inventory_screen_bloc.dart';
 import 'package:rentinventory/Screens/InventoryFormScreen/form/inventory_form_screen.dart';
-import 'package:rentinventory/Utils/shared_pref_utils.dart';
+import 'package:rentinventory/base/constants/app_constant.dart';
+import 'package:rentinventory/base/constants/app_widgets.dart';
 import 'package:rentinventory/base/src_widgets.dart';
 
 import '../../base/basePage.dart';
@@ -33,8 +33,8 @@ class _AddInventoryScreenState
   AddInventoryScreenBloc bloc = AddInventoryScreenBloc();
 
   var tableKey = GlobalKey<DynamicTableState>();
-
   final TextEditingController _searchController = TextEditingController();
+  List<String> selectedDocumentIds = [];
 
   @override
   void initState() {
@@ -104,8 +104,20 @@ class _AddInventoryScreenState
           onRowDelete: (index, row) {
             String documentId =
                 documents[index].id; // Get the document ID using index
-            _deleteInventoryItem(documentId);
+            bloc.deleteInventoryItem(documentId);
             return true;
+          },
+          onRowEdit: (index, row) {
+            return true;
+          },
+          onRowSave: (index, oldValue, newValue) {
+            String documentId = documents[index].id;
+            final Map<String, dynamic> newValueMap = {
+              'serialNumber': newValue[0],
+              'name': newValue[1],
+            };
+            bloc.updateInventoryItem(documentId, newValueMap);
+            return newValue; // Return the new values
           },
           showActions: true,
           showAddRowButton: false,
@@ -123,9 +135,19 @@ class _AddInventoryScreenState
           columnSpacing: 60,
           actionColumnTitle: "My Action Title",
           showCheckboxColumn: true,
-          onSelectAll: (value) {},
-          onRowsPerPageChanged: (value) {},
           actions: [
+            ButtonView(
+              color: Colors.redAccent,
+              "Delete Selected",
+              () async {
+                await bloc.deleteSelectedInventoryItems(selectedDocumentIds);
+                bloc.getInventoryData();
+              },
+              postfix: Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
+            ),
             ButtonView(
               "Add Inventory",
               () async {
@@ -162,15 +184,20 @@ class _AddInventoryScreenState
               cells: [
                 DynamicTableDataCell(value: data['serialNumber']),
                 DynamicTableDataCell(value: data['name']),
-                // Display user email
-                DynamicTableDataCell(
-                    value: data['imageUrl'], showEditIcon: false),
+                DynamicTableDataCell(value: data['imageUrl']),
               ],
-              onSelectChanged: (value) {},
+              onSelectChanged: (value) {
+                if (value == true) {
+                  selectedDocumentIds.add(documents[ documents.indexOf(doc)].id);
+                } else {
+                  selectedDocumentIds.remove(documents[ documents.indexOf(doc)].id);
+                }
+              },
             );
           }).toList(),
           columns: [
             DynamicTableDataColumn(
+                isEditable: false,
                 label: const Text("Scan Code"),
                 dynamicTableInputType: DynamicTableInputType.text()),
             DynamicTableDataColumn(
@@ -190,7 +217,7 @@ class _AddInventoryScreenState
     final result = await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return InventoryFromScreen();
+          return const InventoryFromScreen();
         });
     if (result != null) {
       bloc.getInventoryData();
@@ -198,26 +225,8 @@ class _AddInventoryScreenState
   }
 
   Future<void> _deleteInventoryItem(String documentId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('inventory')
-          .doc(getHospitalName())
-          .collection('items')
-          .doc(documentId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Inventory item deleted successfully'),
-        ),
-      );
-    } catch (e) {
+    try {} catch (e) {
       print('Error deleting inventory item: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to delete inventory item'),
-        ),
-      );
     }
   }
 }

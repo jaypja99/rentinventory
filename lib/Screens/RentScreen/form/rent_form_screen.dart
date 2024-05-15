@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rentinventory/Screens/RentScreen/form/rent_form_screen_bloc.dart';
 import 'package:rentinventory/base/components/screen_utils/flutter_screenutil.dart';
 import 'package:rentinventory/base/constants/app_widgets.dart';
 import 'package:rentinventory/base/src_widgets.dart';
@@ -12,20 +13,19 @@ import '../../../Utils/shared_pref_utils.dart';
 import '../../../base/basePage.dart';
 import '../../../widgets/common_form_dialog/common_form_screen.dart';
 import '../../../widgets/common_image_piker_widget.dart';
-import 'inventory_form_screen_bloc.dart';
 
-class InventoryFromScreen extends BasePage<InventroyFormScreenBloc> {
+class InventoryFromScreen extends BasePage<RentFormScreenBloc> {
   const InventoryFromScreen({super.key});
 
   @override
-  BasePageState<InventoryFromScreen, InventroyFormScreenBloc> getState() {
+  BasePageState<InventoryFromScreen, RentFormScreenBloc> getState() {
     return _FormScreenState();
   }
 }
 
 class _FormScreenState
-    extends BasePageState<InventoryFromScreen, InventroyFormScreenBloc> {
-  final InventroyFormScreenBloc _bloc = InventroyFormScreenBloc();
+    extends BasePageState<InventoryFromScreen, RentFormScreenBloc> {
+  final RentFormScreenBloc _bloc = RentFormScreenBloc();
   final FocusNode _focusNode = FocusNode();
   final barcodeScanner = BarcodeScanner();
   final TextEditingController _nameController = TextEditingController();
@@ -33,14 +33,14 @@ class _FormScreenState
   var serialNumber = "";
 
   Uint8List? _imageData;
-  bool _isSubmitting = false;
+  final bool _isSubmitting = false;
   bool _scanNumberEnabled = false;
 
   @override
   bool isRemoveScaffold() => true;
 
   @override
-  InventroyFormScreenBloc getBloc() {
+  RentFormScreenBloc getBloc() {
     return _bloc;
   }
 
@@ -79,7 +79,9 @@ class _FormScreenState
       width: MediaQuery.of(context).size.width * 0.65,
       padding: EdgeInsets.all(15.w),
       child: Column(
-        children: [_buildFormWidget()],
+        children: [
+          _buildFormWidget()
+        ],
       ),
     );
   }
