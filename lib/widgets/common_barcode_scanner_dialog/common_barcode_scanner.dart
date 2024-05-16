@@ -24,7 +24,9 @@ class BarcodeScanner {
                 focusNode: _focusNode,
                 onKeyEvent: (event) {
                   if (event is KeyDownEvent) {
-                    // Check if it's a key down event
+                    print("event = $event");
+                    print("event character = ${event.character.toString()}");
+                    print("event character = ${event.physicalKey.toString()}");
                     serialNumber += event.logicalKey.keyLabel;
                     if (serialNumber.length == 8) {
                       Navigator.pop(context, serialNumber);

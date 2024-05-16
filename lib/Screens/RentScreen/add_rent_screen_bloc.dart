@@ -12,18 +12,6 @@ class AddRentScreenBloc extends BasePageBloc {
 
   Stream<QuerySnapshot> get rentStream => _rentStreamController.stream;
 
-  Future<void> addRentData(Map<String, dynamic> rentData) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('rents')
-          .doc(getHospitalName())
-          .collection('items')
-          .add(rentData);
-    } catch (e) {
-      print('Error adding rent data: $e');
-      // Handle error as needed
-    }
-  }
 
   void getInventoryData() {
     FirebaseFirestore.instance.collection('rents').doc(getHospitalName()).collection('items').snapshots().listen((snapshot) {

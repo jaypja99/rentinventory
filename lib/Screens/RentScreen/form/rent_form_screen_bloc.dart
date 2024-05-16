@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -11,46 +12,29 @@ import '../../../base/constants/app_widgets.dart';
 
 class RentFormScreenBloc extends BasePageBloc {
 
-  Future<void> AddInventory(
-      TextEditingController serialNumberController,
-      TextEditingController nameController,
-      Uint8List? imageData,
-      BuildContext context) async {
-    try {
-      showLoadingDialog();
+  final _rentStreamController = StreamController<QuerySnapshot>();
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('inventory')
+  Stream<QuerySnapshot> get rentStream => _rentStreamController.stream;
+
+  void getInventoryData() {
+    FirebaseFirestore.instance.collection('rents').doc(getHospitalName()).collection('items').snapshots().listen((snapshot) {
+      _rentStreamController.add(snapshot);
+    });
+  }
+
+  Future<void> addRentData(Map<String, dynamic> rentData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('rents')
           .doc(getHospitalName())
           .collection('items')
-          .where('serialNumber', isEqualTo: serialNumberController.text)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        showMessageBar(
-            "Inventory with this serial number already exists", Colors.deepOrangeAccent);
-      } else {
-        String imageDataString = base64Encode(imageData!);
-
-        await FirebaseFirestore.instance
-            .collection('inventory')
-            .doc(getHospitalName())
-            .collection('items')
-            .add({
-          'serialNumber': serialNumberController.text,
-          'name': nameController.text,
-          'imageUrl': imageDataString,
-        });
-        hideLoadingDialog();
-        showMessageBar("Inventory added successfully");
-      }
+          .add(rentData);
     } catch (e) {
-      hideLoadingDialog();
-
-      showMessageBar("Failed to add inventory", Colors.redAccent);
-    } finally {
-      Navigator.of(context).pop();
+      print('Error adding rent data: $e');
+      // Handle error as needed
     }
   }
+
+
 
 }
